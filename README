@@ -25,4 +25,5 @@ See the file "copying.txt" for details.
 List of changes:
 ---------------------
 
-Changes only in eval.cpp - logging of the eval.
+1) Changes only in eval.cpp - logging of the eval.
+   A directory "logs" must exist within the executable's directory.
