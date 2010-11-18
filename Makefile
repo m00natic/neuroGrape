@@ -28,10 +28,12 @@ CXXFLAGS += -O3 -fno-exceptions -fno-rtti -Wall
 
 # optimisation
 
-CXXFLAGS +=  -fstrict-aliasing
+CXXFLAGS += -fstrict-aliasing
 CXXFLAGS += -fomit-frame-pointer
+CXXFLAGS += -march=core2
+CXXFLAGS += -mtune=core2
 # CXXFLAGS += -march=athlon-xp # SELECT ME
-# CXXFLAGS += -march=pentium4 
+# CXXFLAGS += -march=pentium4
 
 # profiling
 
