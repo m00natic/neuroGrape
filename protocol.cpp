@@ -256,6 +256,7 @@ static void loop_step() {
 
 	  SearchInput->exit_engine = true;
 	  resume_threads();
+	    eval_quit();
       exit(EXIT_SUCCESS);
 
    } else if (string_start_with(string,"setoption ")) {
@@ -292,8 +293,8 @@ static void loop_step() {
       ASSERT(!Searching);
       ASSERT(!Delay);
 
-      send("id name grapeLog " VERSION);
-      send("id author ThinkingALot");
+      send("id name neuroGrape " VERSION);
+      send("id author Andrey Kotlarski");
 
       option_list();
 

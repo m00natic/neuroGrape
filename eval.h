@@ -14,6 +14,7 @@ extern bool egbb_is_loaded;
 // functions
 
 extern void eval_init ();
+extern void eval_quit ();
 extern void eval_parameter ();
 
 extern int  eval      (board_t * board, int alpha, int beta, int ThreadId);

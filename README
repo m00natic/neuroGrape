@@ -1,29 +1,48 @@
-March 16, 2009
+* Introduction
 
-grapeLog
-Based on Grapefruit 1.0
+** neuroGrape is a free UCI chess engine based on Grapefruit [fn:1]
+** which is based on based on Toga II 1.4 beta5c. neuroGrape is an
+** attempt to integrate a backpropagation neural network as an
+** evaluation function.  The engine has 4 modes of play, controlled by
+** the "Mode" UCI parameter:
 
-Legal details
--------------
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or (at
-your option) any later version.
+0 - original Grapefruit eval is logged to files.  There has to be a
+`logs' directory along the neuroGrape executable.  These log files can
+be processed by the neuroChessTrainer [fn:2] program to train and test
+networks.  This mode can work correctly only on single thread so be
+sure to specify "Threads" UCI parameter as 1.
 
-This program is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-General Public License for more details.
+1 - online training.  The original Grapefruit eval is used to train the
+network specified by the "Neural Network File" UCI parameter while
+neuroGrape is playing like Grapefruit, albeit way slower.  The neural
+network file format can be found at [fn:2] (not fully specified
+network is also allowed).  Newly trained network is saved to the same
+file when engine is unloaded.  For this mode a single engine thread is
+also mandatory but there is additional "Training Threads" UCI
+parameter which specifies number of threads within the neural network.
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-USA
+2 - neural network specified by "Neural Network File" UCI parameter is
+used for evaluation (again not fully specified network is also
+allowed but it will be freshly initialized and thus playing about
+randomly).  Multiple threads specified by the "Threads" UCI parameter
+are allowed.
 
-See the file "copying.txt" for details.
+3 - original Grapefruit playing.
 
-List of changes:
----------------------
+* MISC
 
-1) Changes only in eval.cpp - logging of the eval.
-   A directory "logs" must exist within the executable's directory.
+** neuroGrape is developed and so far only tested on GNU/Linux.
+** To build from source invoke `make all' in the source directory.
+
+* Disclaimer
+
+** neuroGrape is an experiment and in combination with
+** neuroChessTrainer [fn:2] supposed to be testing framework for
+** different backpropagation neural networks.  There are no
+** expectations for engine strength and as far as hardly trained, it
+** plays like a novice drunkard.
+
+
+* Footnotes
+[fn:1] http://sourceforge.net/projects/grapefruitchess
+[fn:2] https://github.com/m00natic/neuroChessTrainer

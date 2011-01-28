@@ -39,7 +39,7 @@ int main(int argc, char * argv[]) {
    util_init();
    my_random_init(); // for opening book
 
-   printf("Grapefruit "VERSION" based on Toga II 1.4 beta5c.\n");
+   printf("neuroGrape "VERSION" based on Toga II 1.4 beta5c.\n");
 
    // early initialisation (the rest is done after UCI options are parsed in protocol.cpp)
 

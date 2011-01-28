@@ -19,9 +19,11 @@
 #include "fen.h"
 
 #include <string>
-//#include <sstream>
+#include <sstream>
 #include <ctime>
 
+#include "bpn.h"
+#include "protocol.h"
 
 // macros
 
@@ -169,15 +171,10 @@ static int  storm_file         (const board_t * board, int file, int colour);
 static bool bishop_can_attack  (const board_t * board, int to, int colour);
 
 // by Andrey
-//static bool LogEval = false;
-static std::string LogFileUser = "./logs/grapefruit.log";
-static std::string LogFile = "./logs/grapefruit";
-//static const char * fannFile = "Toga.fann";
-static FILE * LogFileWriter;
-//static struct fann *ann;
-//static long long fileCounter = 1;
-//static fann_type * inputANN;
-
+BPN *bpn0;
+int eval_counter;
+const std::string EvalFile = "./logs/grapefruit-";
+std::ofstream LogEval;
 
 // functions
 
@@ -189,121 +186,152 @@ void eval_parameter() {
 // eval_init()
 
 void eval_init() {
+  if (option_get_int("Mode") !=2) {
+    int colour;
+    int piece;
 
-  int colour;
-  int piece;
+    // UCI options
 
-  // UCI options
+    eval_parameter();
 
-  eval_parameter();
+    // mobility table
 
-  // mobility table
+    for (colour = 0; colour < ColourNb; colour++) {
+      for (piece = 0; piece < PieceNb; piece++) {
+	MobUnit[colour][piece] = 0;
+      }
+    }
 
-  for (colour = 0; colour < ColourNb; colour++) {
+    MobUnit[White][Empty] = MobMove;
+
+    MobUnit[White][BP] = MobAttack;
+    MobUnit[White][BN] = MobAttack;
+    MobUnit[White][BB] = MobAttack;
+    MobUnit[White][BR] = MobAttack;
+    MobUnit[White][BQ] = MobAttack;
+    MobUnit[White][BK] = MobAttack;
+
+    MobUnit[White][WP] = MobDefense;
+    MobUnit[White][WN] = MobDefense;
+    MobUnit[White][WB] = MobDefense;
+    MobUnit[White][WR] = MobDefense;
+    MobUnit[White][WQ] = MobDefense;
+    MobUnit[White][WK] = MobDefense;
+
+    MobUnit[Black][Empty] = MobMove;
+
+    MobUnit[Black][WP] = MobAttack;
+    MobUnit[Black][WN] = MobAttack;
+    MobUnit[Black][WB] = MobAttack;
+    MobUnit[Black][WR] = MobAttack;
+    MobUnit[Black][WQ] = MobAttack;
+    MobUnit[Black][WK] = MobAttack;
+
+    MobUnit[Black][BP] = MobDefense;
+    MobUnit[Black][BN] = MobDefense;
+    MobUnit[Black][BB] = MobDefense;
+    MobUnit[Black][BR] = MobDefense;
+    MobUnit[Black][BQ] = MobDefense;
+    MobUnit[Black][BK] = MobDefense;
+
+    // KingAttackUnit[]
+
     for (piece = 0; piece < PieceNb; piece++) {
-      MobUnit[colour][piece] = 0;
+      KingAttackUnit[piece] = 0;
     }
+
+    KingAttackUnit[WN] = 1;
+    KingAttackUnit[WB] = 1;
+    KingAttackUnit[WR] = 2;
+    KingAttackUnit[WQ] = 4;
+
+    KingAttackUnit[BN] = 1;
+    KingAttackUnit[BB] = 1;
+    KingAttackUnit[BR] = 2;
+    KingAttackUnit[BQ] = 4;
   }
 
-  MobUnit[White][Empty] = MobMove;
-
-  MobUnit[White][BP] = MobAttack;
-  MobUnit[White][BN] = MobAttack;
-  MobUnit[White][BB] = MobAttack;
-  MobUnit[White][BR] = MobAttack;
-  MobUnit[White][BQ] = MobAttack;
-  MobUnit[White][BK] = MobAttack;
-
-  MobUnit[White][WP] = MobDefense;
-  MobUnit[White][WN] = MobDefense;
-  MobUnit[White][WB] = MobDefense;
-  MobUnit[White][WR] = MobDefense;
-  MobUnit[White][WQ] = MobDefense;
-  MobUnit[White][WK] = MobDefense;
-
-  MobUnit[Black][Empty] = MobMove;
-
-  MobUnit[Black][WP] = MobAttack;
-  MobUnit[Black][WN] = MobAttack;
-  MobUnit[Black][WB] = MobAttack;
-  MobUnit[Black][WR] = MobAttack;
-  MobUnit[Black][WQ] = MobAttack;
-  MobUnit[Black][WK] = MobAttack;
-
-  MobUnit[Black][BP] = MobDefense;
-  MobUnit[Black][BN] = MobDefense;
-  MobUnit[Black][BB] = MobDefense;
-  MobUnit[Black][BR] = MobDefense;
-  MobUnit[Black][BQ] = MobDefense;
-  MobUnit[Black][BK] = MobDefense;
-
-  // KingAttackUnit[]
-
-  for (piece = 0; piece < PieceNb; piece++) {
-    KingAttackUnit[piece] = 0;
-  }
-
-  KingAttackUnit[WN] = 1;
-  KingAttackUnit[WB] = 1;
-  KingAttackUnit[WR] = 2;
-  KingAttackUnit[WQ] = 4;
-
-  KingAttackUnit[BN] = 1;
-  KingAttackUnit[BB] = 1;
-  KingAttackUnit[BR] = 2;
-  KingAttackUnit[BQ] = 4;
-}
-
-
-static void check_logeval_size() {
-  if(LogFileWriter != NULL) {
-    long size=ftell(LogFileWriter);
-
-    if(size >= 4194304) {	//	file has become larger than 4mb
-      //std::stringstream tempStr;
-
-      time_t rawtime;
-      time ( &rawtime );
-      //tempStr<<fileCounter;
-      //tempStr<<ctime(&rawtime);
-
-      //LogFileUser = LogFile + "_" + tempStr.str() + ".log";
-      LogFileUser = LogFile + ctime(&rawtime);
-      //++fileCounter;
-      LogFileUser = LogFileUser.erase(LogFileUser.find_last_of("0123456679")+1) + ".log";
-      //LogFileUser = std::remove(LogFileUser.begin(), LogFileUser.end(), ' ');
-      freopen(LogFileUser.c_str(),"a",LogFileWriter);
-    }
-  }
-  else {
+  std::string EvalFileTime;
+  // Andrey part
+  switch (option_get_int("Mode")) {
+  case 0:
+    eval_counter = 0;
     time_t rawtime;
-    time ( &rawtime );
-    LogFileUser = LogFile + ctime(&rawtime);
-    LogFileUser = LogFileUser.erase(LogFileUser.find_last_of("0123456679")+1) + ".log";
-    LogFileWriter = fopen(LogFileUser.c_str(),"a");
-    check_logeval_size();
+    time(&rawtime);
+    EvalFileTime = EvalFile + ctime(&rawtime);
+    EvalFileTime = EvalFileTime.erase(EvalFileTime.find_last_of("0123456679")+1) + ".log";
+    LogEval.open(EvalFileTime.c_str(), std::ios::out | std::ios::app);
+    break;
+  case 1:
+    bpn0 = new BPN(option_get_string("Neural Network File"), option_get_int("Training Threads") - 1);
+    break;
+  case 2:
+    bpn0 = new BPN(option_get_string("Neural Network File"), NumberThreads - 1);
   }
 }
 
-// eval()
+// eval_quit() - Andrey part
+void eval_quit() {
+  switch (option_get_int("Mode")) {
+  case 0:
+    LogEval.close();
+    break;
+  case 1:
+    bpn0->SaveToFile(option_get_string("Neural Network File"));
+  case 2:
+    delete bpn0;
+  }
+}
+
+// eval() - Andrey part
 
 int eval(board_t *board, int alpha, int beta, int thread_id) {
-  int eval;
-
   char fen[92];
-  board_to_fen(board, fen, 92);
+  std::stringstream fen_eval;
+  int orig_eval;
 
-  eval = eval_original(board, alpha, beta, thread_id);
+  switch (option_get_int("Mode")) {
+  case 0:			// logging mode
+    if (eval_counter > 199999) {
+      LogEval.close();
+      eval_counter = 1;
+      time_t rawtime;
+      time(&rawtime);
+      std::string EvalFileTime = EvalFile + ctime(&rawtime);
+      EvalFileTime = EvalFileTime.erase(EvalFileTime.find_last_of("0123456679")+1) + ".log";
+      LogEval.open(EvalFileTime.c_str(), std::ios::out | std::ios::app);
+    }
+    else
+      ++eval_counter;
 
-  //log eval
-  check_logeval_size();
-  fprintf(LogFileWriter, "%s [%d]\n", fen, (COLOUR_IS_BLACK(board->turn) ? -eval : eval));
-  //	fprintf(LogFileWriter, "%s [%d]\n", fen, eval);
+    board_to_fen(board, fen, 92);
+    orig_eval = eval_original(board, alpha, beta, thread_id);
+    LogEval << fen << " [" << (COLOUR_IS_BLACK(board->turn) ? -orig_eval : orig_eval) << "]" << std::endl;
 
-  return eval;
+    return orig_eval;
+
+  case 1:			// online learning
+    board_to_fen(board, fen, 92);
+    orig_eval = eval_original(board, alpha, beta, thread_id);
+
+    fen_eval << fen << " [" << (COLOUR_IS_BLACK(board->turn) ? -orig_eval : orig_eval) << "]";
+    bpn0->Train(fen_eval.str().c_str());
+
+    return orig_eval;
+
+  case 2:			// neural network playing
+    board_to_fen(board, fen, 92);
+    bpn0->Run(fen, (unsigned) thread_id);
+    orig_eval = int(bpn0->layers[bpn0->size -1]->products[thread_id][0]);
+
+    return (COLOUR_IS_BLACK(board->turn) ? -orig_eval : orig_eval);
+
+  default:			// grapefruit itself
+    return eval_original(board, alpha, beta, thread_id);
+  }
 }
 
-// eval()
+// eval_original()
 
 static int eval_original(board_t * board, int alpha, int beta, int ThreadId)  {
 

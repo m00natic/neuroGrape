@@ -42,6 +42,11 @@ static option_t Option[] = {
    { "Bitbases Cache Size", true, "16", "spin", "min 16 max 1024", NULL },
    { "MultiPV", true, "1", "spin",  "min 1 max 10", NULL },
 
+   // Andrey part
+   { "Mode", true, "2", "spin", "min 0 max 3", NULL },
+   { "Neural Network File", true, "grape.bpn", "string", "", NULL },
+   { "Training Threads", true, "1", "spin", "min 1 max 8", NULL },
+
    { NULL, false, NULL, NULL, NULL, NULL, },
 };
 
