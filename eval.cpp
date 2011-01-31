@@ -317,14 +317,17 @@ int eval(board_t *board, int alpha, int beta, int thread_id) {
     fen_eval << fen << " [" << (COLOUR_IS_BLACK(board->turn) ? -orig_eval : orig_eval) << "]";
     bpn0->Train(fen_eval.str().c_str());
 
-    return orig_eval;
+    orig_eval = int(bpn0->layers[bpn0->size -1]->products[thread_id][0]);
+
+    return COLOUR_IS_BLACK(board->turn) ? -orig_eval : orig_eval;
+    //    return orig_eval;
 
   case 2:			// neural network playing
     board_to_fen(board, fen, 92);
     bpn0->Run(fen, (unsigned) thread_id);
     orig_eval = int(bpn0->layers[bpn0->size -1]->products[thread_id][0]);
 
-    return (COLOUR_IS_BLACK(board->turn) ? -orig_eval : orig_eval);
+    return COLOUR_IS_BLACK(board->turn) ? -orig_eval : orig_eval;
 
   default:			// grapefruit itself
     return eval_original(board, alpha, beta, thread_id);
