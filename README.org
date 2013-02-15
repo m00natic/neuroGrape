@@ -1,13 +1,14 @@
-# -*- mode:org -*-            neuroGrape
-#+STARTUP: indent
-
 * Introduction
 
-** neuroGrape is a free UCI chess engine based on Grapefruit 1.0[fn:1]
-** which is based on Toga II 1.4 beta5c[fn:2].  neuroGrape is an
-** attempt to integrate a backpropagation neural network as an
-** evaluation function.  The engine has 4 modes of play, controlled by
-** the "Mode" UCI parameter:
+neuroGrape is a free UCI chess engine based on Grapefruit 1.0[fn:1]
+which is based on Toga II 1.4 beta5c[fn:2].  neuroGrape is an attempt
+to integrate a backpropagation neural network as an evaluation
+function.
+
+* Usage
+
+The engine has 4 modes of play, controlled by the "Mode" UCI
+parameter:
 
 0 - original Grapefruit eval is logged to files.  There has to be a
 `logs' directory along the neuroGrape executable.  These log files can
@@ -38,16 +39,16 @@ UCI parameter are allowed.
 
 * MISC
 
-** neuroGrape is developed and thus far only tested on GNU/Linux.
-** To build from source invoke `make' in the source directory.
+neuroGrape is developed and thus far only tested on GNU/Linux.  To
+build from source invoke `make' in the source directory.
 
 * Disclaimer
 
-** neuroGrape is an experiment (more like meta-engine) and in
-** combination with neuroChessTrainer[fn:3] supposed to be testing
-** platform for different backpropagation neural networks.  There
-** are no expectations for engine strength and as far as hardly
-** trained, it plays like a novice drunkard.
+neuroGrape is an experiment (more like meta-engine) and in combination
+with neuroChessTrainer[fn:3] supposed to be testing platform for
+different backpropagation neural networks.  There are no expectations
+for engine strength and as far as hardly trained, it plays like a
+novice drunkard.
 
 
 * Footnotes
